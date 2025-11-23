@@ -1,16 +1,16 @@
-SSH Log Analysis Using Splunk
+**SSH Log Analysis Using Splunk**
 
-Project Overview
+**Project Overview**
 
 This project focuses on analyzing SSH authentication logs using Splunk SIEM to detect:
 
- Successful SSH logins
+ *Successful SSH logins
 
- Failed login attempts
+ *Failed login attempts
 
- Multiple failed authentication attempts (brute-force indicators)
+ *Multiple failed authentication attempts (brute-force indicators)
 
- Suspicious SSH connections without authentication
+ *Suspicious SSH connections without authentication
 
 This project simulates real-world SOC analyst work, including log ingestion, detection, dashboards, and alert creation.
 
@@ -29,18 +29,18 @@ Web browser with Splunk access (http://localhost:8000
 
 ssh_log.json → Raw log file
 
-Screenshots → All tasks documented via screenshots
 
-README.md → (This file)
+
+README.md 
 
  Lab Setup
-Step 1: Log into Splunk
+**Step 1: Log into Splunk**
 
 Navigate to:
 
 http://localhost:8000
 
-Step 2: Upload SSH Logs
+**Step 2: Upload SSH Logs**
 
 Go to: Apps → Search & Reporting
 
@@ -56,7 +56,7 @@ Index: ssh_logs1
 
 Click Start Searching
 
-✔ Fields Verified
+ Fields Verified
 
 After ingestion, Splunk should extract:
 
@@ -70,7 +70,9 @@ id.orig_h (source IP)
 
 id.resp_h (destination host)
 
- Task 1 — Validate Log Ingestion
+
+**Task 1 — Validate Log Ingestion
+**
 Search Command
 index=ssh_logs1 | stats count by event_type
 
@@ -84,7 +86,7 @@ SSH activity types are visible
 
 
 
- Task 2 — Analyze Failed Login Attempts
+ **Task 2 — Analyze Failed Login Attempts**
 List all failed attempts
 index=ssh_logs1 event_type="Failed SSH Login"
 | stats count by id.orig_h
@@ -99,7 +101,7 @@ Visualization: Bar Chart: Failed Login Attempts per Source IP
 
 
 
- Task 3 — Detect Brute-Force Attempts
+ **Task 3 — Detect Brute-Force Attempts**
 Find multiple failed auth attempts
 index=ssh_logs1 event_type="Multiple Failed Authentication Attempts"
 | stats count by id.orig_h, id.resp_h
@@ -122,7 +124,7 @@ Configured email / UI notification
 
 
 
- Task 4 — Track Successful Logins
+ **Task 4 — Track Successful Logins**
 Search
 index=ssh_logs1 event_type="Successful SSH Login"
 | stats count by id.orig_h, id.resp_h
@@ -140,11 +142,11 @@ Top Source IPs with Successful Logins
 
 
 
- Task 5 — Suspicious SSH Connections (No Authentication)
+ **Task 5 — Suspicious SSH Connections (No Authentication)**
 Search
 index=ssh_logs1 event_type="Connection Without Authentication"
 | stats count by id.orig_h
 
-Time-based Behavior Analysis
+**Time-based Behavior Analysis**
 index=ssh_logs1 event_type="Connection Without Authentication"
 | timechart count by id.orig_h
