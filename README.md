@@ -1,152 +1,234 @@
-**SSH Log Analysis Using Splunk**
+# SSH Log Analysis Using Splunk
 
-**Project Overview**
+## 📘 Project Overview
 
-This project focuses on analyzing SSH authentication logs using Splunk SIEM to detect:
+This project demonstrates **SSH authentication log analysis using Splunk SIEM** to detect suspicious and malicious SSH activity.
 
- *Successful SSH logins
+The lab simulates **real-world SOC analyst tasks**, including log ingestion, search creation, visualization, dashboard building, and alert configuration.
 
- *Failed login attempts
+The analysis focuses on identifying:
 
- *Multiple failed authentication attempts (brute-force indicators)
+* Successful SSH logins
+* Failed SSH login attempts
+* Brute-force indicators (multiple failed authentications)
+* Suspicious SSH connections without authentication
 
- *Suspicious SSH connections without authentication
+---
 
-This project simulates real-world SOC analyst work, including log ingestion, detection, dashboards, and alert creation.
+## 🎯 Learning Objectives
 
- Lab Environment
+* Ingest and parse JSON logs in Splunk
+* Perform SSH security analysis using SPL
+* Detect brute-force and suspicious behavior
+* Create dashboards and alerts
+* Understand attacker vs legitimate SSH patterns
 
-Splunk Enterprise / Free (local Ubuntu VM)
+---
 
-ssh_log.json dataset
+## 🧪 Lab Environment
 
-Ubuntu Linux Machine
+* **Splunk Enterprise / Free** (Local Ubuntu VM)
+* **Ubuntu Linux** machine
+* **ssh_log.json** dataset
+* Web browser access to Splunk (`http://localhost:8000`)
 
-Web browser with Splunk access (http://localhost:8000
-)
+---
 
- Project Files
+## 📂 Project Files
 
-ssh_log.json → Raw log file
+```
+ssh-log-analysis/
+│── ssh_log.json    # Raw SSH log dataset
+│── README.md       # Documentation
+```
 
+---
 
+## 🚀 Lab Setup
 
-README.md 
+### Step 1️⃣ Log in to Splunk
 
- Lab Setup
-**Step 1: Log into Splunk**
+Open your browser and navigate to:
+
+```
+http://localhost:8000
+```
+
+Login using your Splunk admin credentials.
+
+---
+
+### Step 2️⃣ Upload SSH Logs
 
 Navigate to:
 
-http://localhost:8000
+```
+Apps → Search & Reporting → Add Data → Upload File
+```
 
-**Step 2: Upload SSH Logs**
+Upload:
 
-Go to: Apps → Search & Reporting
+* **File:** `ssh_log.json`
 
-Click Add Data → Upload File
+Set the following options:
 
-Upload ssh_log.json
+* **Sourcetype:** `_json`
+* **Index:** `ssh_logs1`
 
-Set:
+Click **Start Searching** once ingestion is complete.
 
-Sourcetype: _json
+---
 
-Index: ssh_logs1
+## 🔎 Fields Verified After Ingestion
 
-Click Start Searching
+Splunk successfully extracts the following fields:
 
- Fields Verified
+* `event_type`
+* `auth_success`
+* `auth_attempts`
+* `id.orig_h` (Source IP)
+* `id.resp_h` (Destination Host)
 
-After ingestion, Splunk should extract:
+---
 
-event_type
+## 🧩 Task 1 — Validate Log Ingestion
 
-auth_success
+### SPL Query
 
-auth_attempts
+```spl
+index=ssh_logs1
+| stats count by event_type
+```
 
-id.orig_h (source IP)
+### ✅ What This Confirms
 
-id.resp_h (destination host)
+* Logs are successfully ingested
+* SSH event types are parsed correctly
+* Data is ready for analysis
 
+---
 
-**Task 1 — Validate Log Ingestion
-**
-Search Command
-index=ssh_logs1 | stats count by event_type
+## 🚫 Task 2 — Analyze Failed Login Attempts
 
- What You Confirmed
+### SPL Query
 
-Logs are parsed
-
-Events correctly categorized
-
-SSH activity types are visible
-
-
-
- **Task 2 — Analyze Failed Login Attempts**
-List all failed attempts
+```spl
 index=ssh_logs1 event_type="Failed SSH Login"
 | stats count by id.orig_h
+```
 
- What You Found
+### 🔍 Findings
 
-Identified IPs causing failed SSH attempts
+* Identified IP addresses generating failed SSH attempts
+* Highlighted suspicious source IPs
 
-Highlighted suspicious behavior
+### 📊 Visualization
 
-Visualization: Bar Chart: Failed Login Attempts per Source IP
+* **Bar Chart:** Failed SSH Login Attempts per Source IP
 
+---
 
+## 🔐 Task 3 — Detect Brute-Force Attempts
 
- **Task 3 — Detect Brute-Force Attempts**
-Find multiple failed auth attempts
+### SPL Query
+
+```spl
 index=ssh_logs1 event_type="Multiple Failed Authentication Attempts"
 | stats count by id.orig_h, id.resp_h
+```
 
-Create Splunk Alert
+### 🚨 Alert Configuration
 
-Condition:
+**Trigger Condition:**
 
-More than 5 login attempts from same IP within 10 minutes
+* More than **5 login attempts** from the same IP within **10 minutes**
 
-Steps You Performed
+**Steps Performed:**
 
-Saved search → Create Alert
+* Saved the search
+* Created a Splunk alert
+* Scheduled search to run every 10 minutes
+* Configured UI / Email notification
 
-Set trigger conditions
+---
 
-Scheduled search every 10 minutes
+## ✅ Task 4 — Track Successful SSH Logins
 
-Configured email / UI notification
+### SPL Query
 
-
-
- **Task 4 — Track Successful Logins**
-Search
+```spl
 index=ssh_logs1 event_type="Successful SSH Login"
 | stats count by id.orig_h, id.resp_h
+```
 
- Purpose
+### 🎯 Purpose
 
-Detect legitimate logins
+* Detect legitimate SSH access
+* Compare successful logins with prior failed attempts
+* Identify potential account compromise
 
-Compare successful logins with prior failures
+### 📊 Dashboard Panel Created
 
-Identify possible account compromise
+* **Top Source IPs with Successful SSH Logins**
 
-Dashboard Panel Created:
-Top Source IPs with Successful Logins
+---
 
+## ⚠️ Task 5 — Suspicious SSH Connections (No Authentication)
 
+### SPL Query
 
- **Task 5 — Suspicious SSH Connections (No Authentication)**
-Search
+```spl
 index=ssh_logs1 event_type="Connection Without Authentication"
 | stats count by id.orig_h
+```
 
-**Time-based Behavior Analysis**
+### ⏱️ Time-Based Behavior Analysis
+
+```spl
 index=ssh_logs1 event_type="Connection Without Authentication"
 | timechart count by id.orig_h
+```
+
+### 🔍 Purpose
+
+* Identify reconnaissance or scanning activity
+* Detect abnormal SSH connection patterns
+
+---
+
+## 📊 Dashboards & Alerts
+
+This project includes:
+
+* Failed login activity dashboard
+* Successful login tracking panel
+* Brute-force detection alert
+* Time-based SSH anomaly visualization
+
+---
+
+## 🧠 SOC Analyst Takeaways
+
+* Early detection of brute-force attacks
+* Visibility into SSH misuse
+* Improved incident response readiness
+* Practical SPL experience
+
+---
+
+## ⚠️ Disclaimer
+
+This project is for **educational and authorized lab use only**. Do not analyze logs from systems you do not own or have permission to monitor.
+
+---
+
+## 📄 License
+
+Provided for **learning, lab practice, and academic use**.
+
+---
+
+**Project Title:** SSH Log Analysis Using Splunk
+**Category:** SIEM • SOC • Log Analysis
+**Tool:** Splunk Enterprise
+**Author:** Sudeep
